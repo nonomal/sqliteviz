@@ -1,6 +1,11 @@
-import { expect } from 'chai'
+import chai from 'chai'
 import fIo from '@/lib/utils/fileIo'
 import sinon from 'sinon'
+import chaiAsPromised from 'chai-as-promised'
+
+chai.use(chaiAsPromised)
+const expect = chai.expect
+chai.should()
 
 describe('fileIo.js', () => {
   afterEach(() => {
@@ -19,7 +24,9 @@ describe('fileIo.js', () => {
 
     expect(document.createElement.calledOnceWith('a')).to.equal(true)
 
-    expect(window.Blob.calledOnceWith(['foo'], { type: 'octet/stream' })).to.equal(true)
+    expect(
+      window.Blob.calledOnceWith(['foo'], { type: 'octet/stream' })
+    ).to.equal(true)
     const blob = window.Blob.returnValues[0]
     expect(URL.createObjectURL.calledOnceWith(blob)).to.equal(true)
 
@@ -44,7 +51,9 @@ describe('fileIo.js', () => {
 
     expect(document.createElement.calledOnceWith('a')).to.equal(true)
 
-    expect(window.Blob.calledOnceWith(['foo'], { type: 'text/html' })).to.equal(true)
+    expect(window.Blob.calledOnceWith(['foo'], { type: 'text/html' })).to.equal(
+      true
+    )
     const blob = window.Blob.returnValues[0]
     expect(URL.createObjectURL.calledOnceWith(blob)).to.equal(true)
 
@@ -69,7 +78,9 @@ describe('fileIo.js', () => {
 
     sinon.stub(document, 'createElement').returns(spyInput)
 
-    setTimeout(() => { spyInput.dispatchEvent(new Event('change')) })
+    setTimeout(() => {
+      spyInput.dispatchEvent(new Event('change'))
+    })
 
     const data = await fIo.importFile()
     expect(data).to.equal('foo')
@@ -103,7 +114,9 @@ describe('fileIo.js', () => {
     sinon.stub(window, 'FileReader').returns(r)
 
     const blob = new Blob(['foo'])
-    await expect(fIo.readAsArrayBuffer(blob)).to.be.rejectedWith('Problem parsing input file.')
+    await expect(fIo.readAsArrayBuffer(blob)).to.be.rejectedWith(
+      'Problem parsing input file.'
+    )
   })
 
   it('isJSON', () => {

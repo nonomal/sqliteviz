@@ -15,13 +15,14 @@ describe('tab.js', () => {
       query: undefined,
       viewOptions: undefined,
       isPredefined: undefined,
+      updatedAt: undefined,
       viewType: 'chart',
       result: null,
       isGettingResults: false,
       error: null,
       time: 0,
       isSaved: false,
-      state: state
+      state
     })
     expect(newTab.layout).to.include({
       sqlEditor: 'above',
@@ -42,7 +43,8 @@ describe('tab.js', () => {
       viewType: 'pivot',
       viewOptions: 'this is view options object',
       name: 'Foo inquiry',
-      createdAt: '2022-12-05T18:30:30'
+      createdAt: '2022-12-05T18:30:30',
+      updatedAt: '2022-12-06T18:30:30'
     }
 
     const newTab = new Tab(state, inquiry)
@@ -53,13 +55,14 @@ describe('tab.js', () => {
       query: 'SELECT * from foo',
       viewOptions: 'this is view options object',
       isPredefined: undefined,
+      updatedAt: '2022-12-06T18:30:30',
       viewType: 'pivot',
       result: null,
       isGettingResults: false,
       error: null,
       time: 0,
       isSaved: true,
-      state: state
+      state
     })
     expect(newTab.layout).to.include({
       sqlEditor: 'above',
@@ -75,9 +78,11 @@ describe('tab.js', () => {
       currentTabId: 1,
       dbName: 'fooDb',
       db: {
-        execute: sinon.stub().returns(new Promise(resolve => {
-          resolveQuering = resolve
-        })),
+        execute: sinon.stub().returns(
+          new Promise(resolve => {
+            resolveQuering = resolve
+          })
+        ),
         refreshSchema: sinon.stub().resolves()
       }
     }

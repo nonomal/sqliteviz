@@ -1,5 +1,5 @@
 <template>
-  <div :class="{ 'disabled': disabled }">
+  <div :class="{ disabled: disabled }">
     <div class="text-field-label">Delimiter</div>
     <div
       class="delimiter-selector-container"
@@ -8,21 +8,21 @@
     >
       <div class="value">
         <input
-          :class="{ 'filled': filled }"
           ref="delimiterInput"
+          v-model="inputValue"
+          :class="{ filled: filled }"
           type="text"
           maxlength="1"
-          v-model="inputValue"
-          @click.stop
           :disabled="disabled"
+          @click.stop
         />
-        <div class="name">{{ getSymbolName(value) }}</div>
+        <div class="name">{{ getSymbolName(modelValue) }}</div>
       </div>
       <div class="controls" @click.stop>
-        <clear-icon @click.native="clear" :disabled="disabled"/>
+        <clear-icon :disabled="disabled" @click="clear" />
         <drop-down-chevron
           :disabled="disabled"
-          @click.native="!disabled && (showOptions = !showOptions)"
+          @click="!disabled && (showOptions = !showOptions)"
         />
       </div>
     </div>
@@ -30,10 +30,11 @@
       <div
         v-for="(option, index) in options"
         :key="index"
-        @click="chooseOption(option)"
         class="option"
+        @click="chooseOption(option)"
       >
-        <pre>{{option}}</pre><div>{{ getSymbolName(option) }}</div>
+        <pre>{{ option }}</pre>
+        <div>{{ getSymbolName(option) }}</div>
       </div>
     </div>
   </div>
@@ -46,9 +47,14 @@ import ClearIcon from '@/components/svg/clear'
 
 export default {
   name: 'DelimiterSelector',
-  props: ['value', 'width', 'disabled'],
   components: { DropDownChevron, ClearIcon },
-  data () {
+  props: {
+    modelValue: String,
+    width: String,
+    disabled: Boolean
+  },
+  emits: ['update:modelValue'],
+  data() {
     return {
       showOptions: false,
       options: [',', '\t', ' ', '|', ';', '\u001F', '\u001E'],
@@ -57,36 +63,36 @@ export default {
     }
   },
   watch: {
-    inputValue () {
+    inputValue() {
       if (this.inputValue) {
         this.filled = true
-        if (this.inputValue !== this.value) {
-          this.$emit('input', this.inputValue)
+        if (this.inputValue !== this.modelValue) {
+          this.$emit('update:modelValue', this.inputValue)
         }
       } else {
         this.filled = false
       }
     }
   },
-  created () {
-    this.inputValue = this.value
+  created() {
+    this.inputValue = this.modelValue
   },
   methods: {
-    getSymbolName (str) {
+    getSymbolName(str) {
       if (!str) {
         return ''
       }
       return ascii[str.charCodeAt(0).toString()].name
     },
-    chooseOption (option) {
+    chooseOption(option) {
       this.inputValue = option
       this.showOptions = false
     },
-    onContainerClick (event) {
+    onContainerClick() {
       this.$refs.delimiterInput.focus()
     },
 
-    clear () {
+    clear() {
       if (!this.disabled) {
         this.inputValue = ''
         this.$refs.delimiterInput.focus()

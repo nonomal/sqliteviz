@@ -1,6 +1,6 @@
 import { expect } from 'chai'
 import sinon from 'sinon'
-import * as chartHelper from '@/lib/chartHelper'
+import chartHelper from '@/lib/chartHelper'
 import * as dereference from 'react-chart-editor/lib/lib/dereference'
 
 describe('chartHelper.js', () => {
@@ -21,37 +21,69 @@ describe('chartHelper.js', () => {
     ])
   })
 
+  it('getSelectedPointsIndexes returns unique selected point indexes', () => {
+    const stateData = [
+      { selectedpoints: [1, 2, 3] },
+      { selectedpoints: [3, 4] },
+      { selectedpoints: [] },
+      {}
+    ]
+
+    const indexes = chartHelper.getSelectedPointsIndexes(stateData)
+
+    expect(indexes).to.eql([1, 2, 3, 4])
+  })
+
   it('getOptionsForSave', () => {
     const state = {
-      data: {
-        foo: {},
-        bar: {}
-      },
-      layout: {},
+      data: [
+        {
+          foo: {},
+          bar: {},
+          selectedpoints: []
+        }
+      ],
+      layout: { selections: [{}] },
       frames: {}
     }
     const dataSources = {
       id: [1, 2],
       name: ['foo', 'bar']
     }
-    sinon.stub(dereference, 'default')
+    const dereferenceArgs = []
+    sinon.stub(dereference, 'default').callsFake((data, emptySources) => {
+      dereferenceArgs[0] = JSON.stringify(data)
+      dereferenceArgs[1] = JSON.stringify(emptySources)
+    })
     sinon.spy(JSON, 'parse')
 
     const ds = chartHelper.getOptionsForSave(state, dataSources)
 
     expect(dereference.default.calledOnce).to.equal(true)
-
-    const args = dereference.default.firstCall.args
-    expect(args[0]).to.eql({
-      foo: {},
-      bar: {}
-    })
-    expect(args[1]).to.eql({
-      id: [],
-      name: []
-    })
+    expect(dereferenceArgs[0]).to.eql(
+      JSON.stringify([
+        {
+          foo: {},
+          bar: {},
+          selectedpoints: []
+        }
+      ])
+    )
+    expect(dereferenceArgs[1]).to.eql(
+      JSON.stringify({
+        id: [],
+        name: []
+      })
+    )
 
     expect(ds).to.equal(JSON.parse.returnValues[0])
+    expect(ds.layout.selections).to.eql([])
+    expect(ds.data).to.eql([
+      {
+        foo: {},
+        bar: {}
+      }
+    ])
   })
 
   it('getImageDataUrl returns dataUrl', async () => {
@@ -97,7 +129,36 @@ describe('chartHelper.js', () => {
     expect(doc.children[0].src).to.includes('plotly-latest.js')
     expect(doc.children[1].id).to.have.lengthOf(21)
     expect(doc.children[2].innerHTML).to.includes(doc.children[1].id)
-    expect(doc.children[2].innerHTML)
-      .to.includes('Plotly.newPlot(el, "plotly data", "plotly layout"')
+    expect(doc.children[2].innerHTML).to.includes(
+      'Plotly.newPlot(el, "plotly data", "plotly layout"'
+    )
+  })
+
+  it('getRowsByIndexFromDataSources', () => {
+    const dataSources = {
+      id: [1, 2, 3],
+      name: ['Harry', 'Draco', 'Ron'],
+      points: [10, null, 7]
+    }
+    const rows = chartHelper.getRowsByIndexFromDataSources(dataSources, [1, 2])
+    expect(rows).to.eql([
+      { id: 2, name: 'Draco', points: null },
+      { id: 3, name: 'Ron', points: 7 }
+    ])
+  })
+
+  it('clearSelection', () => {
+    const layout = {
+      selections: [{}],
+      someLayoutField: 1
+    }
+    const data = [
+      { selectedpoints: [], someField: 1 },
+      { someField: 2 },
+      { selectedpoints: [], someField: 3 }
+    ]
+    chartHelper.clearSelection(data, layout)
+    expect(layout).to.eql({ selections: [], someLayoutField: 1 })
+    expect(data).to.eql([{ someField: 1 }, { someField: 2 }, { someField: 3 }])
   })
 })

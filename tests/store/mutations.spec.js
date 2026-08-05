@@ -8,7 +8,8 @@ const {
   updatePredefinedInquiries,
   setDb,
   setLoadingPredefinedInquiries,
-  setPredefinedInquiriesLoaded
+  setPredefinedInquiriesLoaded,
+  setInquiries
 } = mutations
 
 describe('mutations', () => {
@@ -33,7 +34,8 @@ describe('mutations', () => {
       viewType: 'chart',
       viewOptions: { here_are: 'chart settings' },
       isSaved: false,
-      isPredefined: false
+      isPredefined: false,
+      updatedAt: '2025-05-15T15:30:00Z'
     }
 
     const newValues = {
@@ -42,6 +44,7 @@ describe('mutations', () => {
       query: 'SELECT * from bar',
       viewType: 'pivot',
       viewOptions: { here_are: 'pivot settings' },
+      updatedAt: '2025-05-15T16:30:00Z',
       isSaved: true
     }
 
@@ -57,6 +60,7 @@ describe('mutations', () => {
       query: 'SELECT * from bar',
       viewType: 'pivot',
       viewOptions: { here_are: 'pivot settings' },
+      updatedAt: '2025-05-15T16:30:00Z',
       isSaved: true
     })
   })
@@ -318,22 +322,24 @@ describe('mutations', () => {
   })
 
   it('updatePredefinedInquiries - array', () => {
-    const inquiries = [{
-      id: 1,
-      name: 'foo',
-      query: 'SELECT * FROM foo',
-      viewType: 'chart',
-      viewOptions: {},
-      createdAt: '2020-11-07T20:57:04.492Z'
-    },
-    {
-      id: 2,
-      name: 'bar',
-      query: 'SELECT * FROM bar',
-      viewType: 'chart',
-      viewOptions: {},
-      createdAt: '2020-11-07T20:57:04.492Z'
-    }]
+    const inquiries = [
+      {
+        id: 1,
+        name: 'foo',
+        query: 'SELECT * FROM foo',
+        viewType: 'chart',
+        viewOptions: {},
+        createdAt: '2020-11-07T20:57:04.492Z'
+      },
+      {
+        id: 2,
+        name: 'bar',
+        query: 'SELECT * FROM bar',
+        viewType: 'chart',
+        viewOptions: {},
+        createdAt: '2020-11-07T20:57:04.492Z'
+      }
+    ]
 
     const state = {
       predefinedInquiries: []
@@ -359,5 +365,14 @@ describe('mutations', () => {
 
     setPredefinedInquiriesLoaded(state, true)
     expect(state.predefinedInquiriesLoaded).to.equal(true)
+  })
+
+  it('setInquiries', () => {
+    const state = {
+      inquiries: []
+    }
+
+    setInquiries(state, [1, 2, 3])
+    expect(state.inquiries).to.eql([1, 2, 3])
   })
 })

@@ -1,24 +1,23 @@
 <template>
   <modal
-    :name="dialogName"
-    classes="dialog"
-    height="auto"
-    width="80%"
+    :modalId="dialogName"
+    class="dialog"
+    contentClass="import-modal"
     scrollable
     :clickToClose="false"
   >
     <div class="dialog-header">
       {{ typeName }} import
-      <close-icon @click="cancelImport" :disabled="disableDialog"/>
+      <close-icon :disabled="disableDialog" @click="cancelImport" />
     </div>
     <div class="dialog-body">
       <text-field
-        label="Table name"
+        id="csv-json-table-name"
         v-model="tableName"
+        label="Table name"
         width="484px"
         :disabled="disableDialog"
-        :error-msg="tableNameError"
-        id="csv-json-table-name"
+        :errorMsg="tableNameError"
       />
       <div v-if="!isJson && !isNdJson" class="chars">
         <delimiter-selector
@@ -29,27 +28,27 @@
           @input="preview"
         />
         <text-field
+          id="quote-char"
+          v-model="quoteChar"
           label="Quote char"
           hint="The character used to quote fields."
-          v-model="quoteChar"
           width="93px"
           :disabled="disableDialog"
           class="char-input"
-          id="quote-char"
           @input="preview"
         />
         <text-field
+          id="escape-char"
+          v-model="escapeChar"
           label="Escape char"
           hint='
             The character used to escape the quote character within a field
             (e.g. "column with ""quotes"" in text").
           '
-          max-hint-width="242px"
-          v-model="escapeChar"
+          maxHintWidth="242px"
           width="93px"
           :disabled="disableDialog"
           class="char-input"
-          id="escape-char"
           @input="preview"
         />
       </div>
@@ -67,35 +66,32 @@
         class="preview-table"
       />
       <div v-else class="no-data">No data</div>
-      <logs
-        class="import-errors"
-        :messages="importMessages"
-      />
+      <logs class="import-errors" :messages="importMessages" />
     </div>
     <div class="dialog-buttons-container">
       <button
+        id="import-cancel"
         class="secondary"
         :disabled="disableDialog"
         @click="cancelImport"
-        id="import-cancel"
       >
         Cancel
       </button>
       <button
         v-show="!importCompleted"
+        id="import-start"
         class="primary"
         :disabled="disableDialog || disableImport"
         @click="loadToDb(file)"
-        id="import-start"
       >
         Import
       </button>
       <button
         v-show="importCompleted"
+        id="import-finish"
         class="primary"
         :disabled="disableDialog"
         @click="finish"
-        id="import-finish"
       >
         Finish
       </button>
@@ -106,11 +102,11 @@
 <script>
 import csv from '@/lib/csv'
 import CloseIcon from '@/components/svg/close'
-import TextField from '@/components/TextField'
+import TextField from '@/components/Common/TextField'
 import DelimiterSelector from './DelimiterSelector'
-import CheckBox from '@/components/CheckBox'
+import CheckBox from '@/components/Common/CheckBox'
 import SqlTable from '@/components/SqlTable'
-import Logs from '@/components/Logs'
+import Logs from '@/components/Common/Logs'
 import time from '@/lib/utils/time'
 import fIo from '@/lib/utils/fileIo'
 import events from '@/lib/utils/events'
@@ -130,7 +126,8 @@ export default {
     db: Object,
     dialogName: String
   },
-  data () {
+  emits: ['cancel', 'finish'],
+  data() {
     return {
       disableDialog: false,
       disableImport: false,
@@ -147,24 +144,24 @@ export default {
     }
   },
   computed: {
-    isJson () {
+    isJson() {
       return fIo.isJSON(this.file)
     },
-    isNdJson () {
+    isNdJson() {
       return fIo.isNDJSON(this.file)
     },
-    typeName () {
+    typeName() {
       return this.isJson || this.isNdJson ? 'JSON' : 'CSV'
     }
   },
   watch: {
-    isJson () {
+    isJson() {
       if (this.isJson) {
         this.delimiter = '\u001E'
         this.header = false
       }
     },
-    isNdJson () {
+    isNdJson() {
       if (this.isNdJson) {
         this.delimiter = '\u001E'
         this.header = false
@@ -175,18 +172,17 @@ export default {
       if (!this.tableName) {
         return
       }
-      this.db.validateTableName(this.tableName)
-        .catch(err => {
-          this.tableNameError = err.message + '. Try another table name.'
-        })
+      this.db.validateTableName(this.tableName).catch(err => {
+        this.tableNameError = err.message + '. Try another table name.'
+      })
     }, 400)
   },
   methods: {
-    changeHeaderDisplaying (e) {
+    changeHeaderDisplaying(e) {
       this.header = e
       this.preview()
     },
-    cancelImport () {
+    cancelImport() {
       if (!this.disableDialog) {
         if (this.addedTable) {
           this.db.execute(`DROP TABLE "${this.addedTable}"`)
@@ -196,7 +192,7 @@ export default {
         this.$emit('cancel')
       }
     },
-    reset () {
+    reset() {
       this.header = !this.isJson && !this.isNdJson
       this.quoteChar = '"'
       this.escapeChar = '"'
@@ -210,11 +206,11 @@ export default {
       this.addedTable = null
       this.tableNameError = ''
     },
-    open () {
+    open() {
       this.tableName = this.db.sanitizeTableName(fIo.getFileName(this.file))
       this.$modal.show(this.dialogName)
     },
-    async preview () {
+    async preview() {
       this.disableImport = false
       if (!this.file) {
         return
@@ -257,13 +253,15 @@ export default {
         }
       } catch (err) {
         console.error(err)
-        this.importMessages = [{
-          message: err,
-          type: 'error'
-        }]
+        this.importMessages = [
+          {
+            message: err,
+            type: 'error'
+          }
+        ]
       }
     },
-    async getJsonParseResult (file) {
+    async getJsonParseResult(file) {
       const jsonContent = await fIo.getFileContent(file)
       const isEmpty = !jsonContent.trim()
       return {
@@ -273,10 +271,10 @@ export default {
         },
         hasErrors: false,
         messages: [],
-        rowCount: +(!isEmpty)
+        rowCount: +!isEmpty
       }
     },
-    async loadToDb (file) {
+    async loadToDb(file) {
       if (!this.tableName) {
         this.tableNameError = "Table name can't be empty"
         return
@@ -290,21 +288,22 @@ export default {
         delimiter: this.delimiter,
         columns: !this.isJson && !this.isNdJson ? null : ['doc']
       }
-      const parsingMsg = {
+      let parsingMsg = {}
+      this.importMessages.push({
         message: `Parsing ${this.typeName}...`,
         type: 'info'
-      }
-      this.importMessages.push(parsingMsg)
-      const parsingLoadingIndicator = setTimeout(() => { parsingMsg.type = 'loading' }, 1000)
+      })
+      // Get *reactive* link to parsing message for later updates
+      parsingMsg = this.importMessages[this.importMessages.length - 1]
+      const parsingLoadingIndicator = setTimeout(() => {
+        parsingMsg.type = 'loading'
+      }, 1000)
 
-      const importMsg = {
-        message: `Importing ${this.typeName} into a SQLite database...`,
-        type: 'info'
-      }
+      let importMsg = {}
       let importLoadingIndicator = null
 
       const updateProgress = progress => {
-        this.$set(importMsg, 'progress', progress)
+        importMsg.progress = progress
       }
       const progressCounterId = this.db.createProgressCounter(updateProgress)
 
@@ -322,7 +321,9 @@ export default {
           parsingMsg.type = 'success'
 
           if (parseResult.messages.length > 0) {
-            this.importMessages = this.importMessages.concat(parseResult.messages)
+            this.importMessages = this.importMessages.concat(
+              parseResult.messages
+            )
             parsingMsg.message = `${rowCount} rows are parsed in ${period}.`
           } else {
             // Inform about parsing success
@@ -333,7 +334,11 @@ export default {
           clearTimeout(parsingLoadingIndicator)
 
           // Add info about import start
-          this.importMessages.push(importMsg)
+          this.importMessages.push({
+            message: `Importing ${this.typeName} into a SQLite database...`,
+            type: 'info'
+          })
+          importMsg = this.importMessages[this.importMessages.length - 1]
 
           // Show import progress after 1 second
           importLoadingIndicator = setTimeout(() => {
@@ -342,14 +347,19 @@ export default {
 
           // Add table
           start = new Date()
-          await this.db.addTableFromCsv(this.tableName, parseResult.data, progressCounterId)
+          await this.db.addTableFromCsv(
+            this.tableName,
+            parseResult.data,
+            progressCounterId
+          )
           end = new Date()
 
           this.addedTable = this.tableName
           // Inform about import success
           period = time.getPeriod(start, end)
-          importMsg.message = `Importing ${this.typeName} ` +
-          `into a SQLite database is completed in ${period}.`
+          importMsg.message =
+            `Importing ${this.typeName} ` +
+            `into a SQLite database is completed in ${period}.`
           importMsg.type = 'success'
 
           // Loading indicator for import is not needed anymore
@@ -382,7 +392,7 @@ export default {
       this.db.deleteProgressCounter(progressCounterId)
       this.disableDialog = false
     },
-    async finish () {
+    async finish() {
       this.$modal.hide(this.dialogName)
       const stmt = this.getQueryExample()
       const tabId = await this.$store.dispatch('addTab', { query: stmt })
@@ -391,18 +401,20 @@ export default {
       this.$emit('finish')
       events.send('inquiry.create', null, { auto: true })
     },
-    getQueryExample () {
-      return this.isNdJson ? this.getNdJsonQueryExample()
-        : this.isJson ? this.getJsonQueryExample()
+    getQueryExample() {
+      return this.isNdJson
+        ? this.getNdJsonQueryExample()
+        : this.isJson
+          ? this.getJsonQueryExample()
           : [
-            '/*',
-        ` * Your CSV file has been imported into ${this.addedTable} table.`,
-        ' * You can run this SQL query to make all CSV records available for charting.',
-        ' */',
-        `SELECT * FROM "${this.addedTable}"`
-          ].join('\n')
+              '/*',
+              ` * Your CSV file has been imported into ${this.addedTable} table.`,
+              ' * You can run this SQL query to make all CSV records available for charting.',
+              ' */',
+              `SELECT * FROM "${this.addedTable}"`
+            ].join('\n')
     },
-    getNdJsonQueryExample () {
+    getNdJsonQueryExample() {
       try {
         const firstRowJson = JSON.parse(this.previewData.values.doc[0])
         const firstKey = Object.keys(firstRowJson)[0]
@@ -410,7 +422,7 @@ export default {
           '/*',
           ` * Your NDJSON file has been imported into ${this.addedTable} table.`,
           ` * Run this SQL query to get values of property ${firstKey} ` +
-          'and make them available for charting.',
+            'and make them available for charting.',
           ' */',
           `SELECT doc->>'${firstKey}'`,
           `FROM "${this.addedTable}"`
@@ -426,7 +438,7 @@ export default {
         ].join('\n')
       }
     },
-    getJsonQueryExample () {
+    getJsonQueryExample() {
       try {
         const firstRowJson = JSON.parse(this.previewData.values.doc[0])
         const firstKey = Object.keys(firstRowJson)[0]
@@ -434,7 +446,7 @@ export default {
           '/*',
           ` * Your JSON file has been imported into ${this.addedTable} table.`,
           ` * Run this SQL query to get values of property ${firstKey} ` +
-          'and make them available for charting.',
+            'and make them available for charting.',
           ' */',
           'SELECT *',
           `FROM "${this.addedTable}"`,
@@ -455,13 +467,22 @@ export default {
 }
 </script>
 
+<style>
+.import-modal {
+  width: 80%;
+  max-width: 1152px;
+  margin: auto;
+  left: 0 !important;
+}
+</style>
+
 <style scoped>
 .dialog-body {
   padding-bottom: 0;
 }
 
 #csv-json-table-name {
-margin-bottom: 24px;
+  margin-bottom: 24px;
 }
 
 .chars {
@@ -493,12 +514,5 @@ margin-bottom: 24px;
   display: flex;
   justify-content: center;
   align-items: center;
-}
-
-/* https://github.com/euvl/vue-js-modal/issues/623 */
->>> .vm--modal {
-  max-width: 1152px;
-  margin: auto;
-  left: 0 !important;
 }
 </style>

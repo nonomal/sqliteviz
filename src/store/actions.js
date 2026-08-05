@@ -1,7 +1,8 @@
 import Tab from '@/lib/tab'
+import { nanoid } from 'nanoid'
 
 export default {
-  async addTab ({ state }, inquiry = {}) {
+  async addTab({ state }, inquiry = {}) {
     // add new tab only if it was not already opened
     if (!state.tabs.some(openedTab => openedTab.id === inquiry.id)) {
       const tab = new Tab(state, JSON.parse(JSON.stringify(inquiry)))
@@ -13,5 +14,77 @@ export default {
     }
 
     return inquiry.id
+  },
+  async saveInquiry({ state }, { inquiryTab, newName }) {
+    const value = {
+      id: inquiryTab.isPredefined || newName ? nanoid() : inquiryTab.id,
+      query: inquiryTab.query,
+      viewType: inquiryTab.dataView.mode,
+      viewOptions: inquiryTab.dataView.getOptionsForSave(),
+      name: newName || inquiryTab.name,
+      updatedAt: new Date().toJSON()
+    }
+
+    // Get inquiries from local storage
+    const myInquiries = state.inquiries
+    let inquiryIndex
+    // Set createdAt
+    if (newName) {
+      value.createdAt = new Date().toJSON()
+    } else {
+      inquiryIndex = myInquiries.findIndex(
+        oldInquiry => oldInquiry.id === inquiryTab.id
+      )
+
+      value.createdAt =
+        inquiryIndex !== -1
+          ? myInquiries[inquiryIndex].createdAt
+          : new Date().toJSON()
+    }
+
+    // Insert in inquiries list
+    if (newName || inquiryIndex === -1) {
+      myInquiries.push(value)
+    } else {
+      myInquiries.splice(inquiryIndex, 1, value)
+    }
+
+    return value
+  },
+  addInquiry({ state }, newInquiry) {
+    state.inquiries.push(newInquiry)
+  },
+  deleteInquiries({ state, commit }, inquiryIdSet) {
+    state.inquiries = state.inquiries.filter(
+      inquiry => !inquiryIdSet.has(inquiry.id)
+    )
+
+    // Close deleted inquiries if it was opened
+    const tabs = state.tabs
+    let i = tabs.length - 1
+    while (i > -1) {
+      if (inquiryIdSet.has(tabs[i].id)) {
+        commit('deleteTab', tabs[i])
+      }
+      i--
+    }
+  },
+  renameInquiry({ state, commit }, { inquiryId, newName }) {
+    const renamingInquiry = state.inquiries.find(
+      inquiry => inquiry.id === inquiryId
+    )
+
+    renamingInquiry.name = newName
+
+    // update tab, if renamed inquiry is opened
+    const tab = state.tabs.find(tab => tab.id === renamingInquiry.id)
+    if (tab) {
+      commit('updateTab', {
+        tab,
+        newValues: {
+          name: newName
+        }
+      })
+    }
   }
 }

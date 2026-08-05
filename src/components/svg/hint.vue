@@ -33,7 +33,11 @@
         fill="#A2B1C6"
       />
     </svg>
-    <span class="icon-tooltip" :style="{...tooltipStyle, maxWidth: maxWidth }" ref="tooltip">
+    <span
+      ref="tooltip"
+      class="icon-tooltip"
+      :style="{ ...tooltipStyle, maxWidth: maxWidth }"
+    >
       {{ hint }}
     </span>
   </div>
@@ -44,10 +48,14 @@ import tooltipMixin from '@/tooltipMixin'
 
 export default {
   name: 'HintIcon',
-  props: ['hint', 'maxWidth'],
   mixins: [tooltipMixin],
+  props: {
+    hint: String,
+    maxWidth: String
+  },
+  emits: ['click'],
   methods: {
-    onClick () {
+    onClick() {
       this.hideTooltip()
       this.$emit('click')
     }

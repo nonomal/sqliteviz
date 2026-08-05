@@ -1,16 +1,13 @@
-import Vue from 'vue'
-import VueRouter from 'vue-router'
-import Workspace from '@/views/Main/Workspace'
-import Inquiries from '@/views/Main/Inquiries'
+import { createRouter, createWebHashHistory } from 'vue-router'
+import Workspace from '@/views/Workspace'
+import Inquiries from '@/views/Inquiries'
 import Welcome from '@/views/Welcome'
-import Main from '@/views/Main'
+import MainView from '@/views/MainView'
 import LoadView from '@/views/LoadView'
 import store from '@/store'
 import database from '@/lib/database'
 
-Vue.use(VueRouter)
-
-const routes = [
+export const routes = [
   {
     path: '/',
     name: 'Welcome',
@@ -18,8 +15,8 @@ const routes = [
   },
   {
     path: '/',
-    name: 'Main',
-    component: Main,
+    name: 'MainView',
+    component: MainView,
     children: [
       {
         path: '/workspace',
@@ -40,7 +37,8 @@ const routes = [
   }
 ]
 
-const router = new VueRouter({
+const router = createRouter({
+  history: createWebHashHistory(),
   routes
 })
 

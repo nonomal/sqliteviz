@@ -1,10 +1,11 @@
 import { expect } from 'chai'
 import sinon from 'sinon'
-import Vuex from 'vuex'
+import { createStore } from 'vuex'
 import { shallowMount, mount } from '@vue/test-utils'
 import DbUploader from '@/components/DbUploader'
 import fu from '@/lib/utils/fileIo'
 import database from '@/lib/database'
+import { nextTick } from 'vue'
 
 describe('DbUploader.vue', () => {
   let state = {}
@@ -18,7 +19,7 @@ describe('DbUploader.vue', () => {
     mutations = {
       setDb: sinon.stub()
     }
-    store = new Vuex.Store({ state, mutations })
+    store = createStore({ state, mutations })
 
     place = document.createElement('div')
     document.body.appendChild(place)
@@ -47,9 +48,11 @@ describe('DbUploader.vue', () => {
     // mount the component
     const wrapper = shallowMount(DbUploader, {
       attachTo: place,
-      store,
-      mocks: { $router, $route },
-      propsData: {
+      global: {
+        mocks: { $router, $route },
+        plugins: [store]
+      },
+      props: {
         type: 'illustrated'
       }
     })
@@ -58,9 +61,9 @@ describe('DbUploader.vue', () => {
     expect(db.loadDb.calledOnceWith(file)).to.equal(true)
     await db.loadDb.returnValues[0]
     await wrapper.vm.animationPromise
-    await wrapper.vm.$nextTick()
+    await nextTick()
     expect($router.push.calledOnceWith('/workspace')).to.equal(true)
-    wrapper.destroy()
+    wrapper.unmount()
   })
 
   it('loads db on drop and redirects to /workspace', async () => {
@@ -77,9 +80,11 @@ describe('DbUploader.vue', () => {
     // mount the component
     const wrapper = shallowMount(DbUploader, {
       attachTo: place,
-      store,
-      mocks: { $router, $route },
-      propsData: {
+      global: {
+        mocks: { $router, $route },
+        plugins: [store]
+      },
+      props: {
         type: 'illustrated'
       }
     })
@@ -96,9 +101,9 @@ describe('DbUploader.vue', () => {
     expect(db.loadDb.calledOnceWith(file)).to.equal(true)
     await db.loadDb.returnValues[0]
     await wrapper.vm.animationPromise
-    await wrapper.vm.$nextTick()
+    await nextTick()
     expect($router.push.calledOnceWith('/workspace')).to.equal(true)
-    wrapper.destroy()
+    wrapper.unmount()
   })
 
   it("doesn't redirect if already on /workspace", async () => {
@@ -119,9 +124,11 @@ describe('DbUploader.vue', () => {
     // mount the component
     const wrapper = shallowMount(DbUploader, {
       attachTo: place,
-      store,
-      mocks: { $router, $route },
-      propsData: {
+      global: {
+        mocks: { $router, $route },
+        plugins: [store]
+      },
+      props: {
         type: 'illustrated'
       }
     })
@@ -129,9 +136,9 @@ describe('DbUploader.vue', () => {
     await wrapper.find('.drop-area').trigger('click')
     await db.loadDb.returnValues[0]
     await wrapper.vm.animationPromise
-    await wrapper.vm.$nextTick()
+    await nextTick()
     expect($router.push.called).to.equal(false)
-    wrapper.destroy()
+    wrapper.unmount()
   })
 
   it('shows parse dialog if gets csv file', async () => {
@@ -146,9 +153,11 @@ describe('DbUploader.vue', () => {
     // mount the component
     const wrapper = mount(DbUploader, {
       attachTo: place,
-      store,
-      mocks: { $router, $route },
-      propsData: {
+      global: {
+        mocks: { $router, $route },
+        plugins: [store]
+      },
+      props: {
         type: 'illustrated'
       }
     })
@@ -159,13 +168,13 @@ describe('DbUploader.vue', () => {
     sinon.stub(CsvImport, 'open')
 
     await wrapper.find('.drop-area').trigger('click')
-    await wrapper.vm.$nextTick()
+    await nextTick()
     expect(CsvImport.reset.calledOnce).to.equal(true)
     await wrapper.vm.animationPromise
     expect(CsvImport.preview.calledOnce).to.equal(true)
-    await wrapper.vm.$nextTick()
+    await nextTick()
     expect(CsvImport.open.calledOnce).to.equal(true)
-    wrapper.destroy()
+    wrapper.unmount()
   })
 
   it('shows parse dialog if gets json file', async () => {
@@ -180,9 +189,11 @@ describe('DbUploader.vue', () => {
     // mount the component
     const wrapper = mount(DbUploader, {
       attachTo: place,
-      store,
-      mocks: { $router, $route },
-      propsData: {
+      global: {
+        mocks: { $router, $route },
+        plugins: [store]
+      },
+      props: {
         type: 'illustrated'
       }
     })
@@ -193,13 +204,13 @@ describe('DbUploader.vue', () => {
     sinon.stub(JsonImport, 'open')
 
     await wrapper.find('.drop-area').trigger('click')
-    await wrapper.vm.$nextTick()
+    await nextTick()
     expect(JsonImport.reset.calledOnce).to.equal(true)
     await wrapper.vm.animationPromise
     expect(JsonImport.preview.calledOnce).to.equal(true)
-    await wrapper.vm.$nextTick()
+    await nextTick()
     expect(JsonImport.open.calledOnce).to.equal(true)
-    wrapper.destroy()
+    wrapper.unmount()
   })
 
   it('shows parse dialog if gets ndjson file', async () => {
@@ -214,9 +225,11 @@ describe('DbUploader.vue', () => {
     // mount the component
     const wrapper = mount(DbUploader, {
       attachTo: place,
-      store,
-      mocks: { $router, $route },
-      propsData: {
+      global: {
+        mocks: { $router, $route },
+        plugins: [store]
+      },
+      props: {
         type: 'illustrated'
       }
     })
@@ -227,13 +240,13 @@ describe('DbUploader.vue', () => {
     sinon.stub(JsonImport, 'open')
 
     await wrapper.find('.drop-area').trigger('click')
-    await wrapper.vm.$nextTick()
+    await nextTick()
     expect(JsonImport.reset.calledOnce).to.equal(true)
     await wrapper.vm.animationPromise
     expect(JsonImport.preview.calledOnce).to.equal(true)
-    await wrapper.vm.$nextTick()
+    await nextTick()
     expect(JsonImport.open.calledOnce).to.equal(true)
-    wrapper.destroy()
+    wrapper.unmount()
   })
 
   it('deletes temporary db if import is canceled', async () => {
@@ -247,9 +260,11 @@ describe('DbUploader.vue', () => {
 
     // mount the component
     const wrapper = mount(DbUploader, {
-      store,
-      mocks: { $router, $route },
-      propsData: {
+      global: {
+        mocks: { $router, $route },
+        plugins: [store]
+      },
+      props: {
         type: 'illustrated'
       }
     })
@@ -260,7 +275,7 @@ describe('DbUploader.vue', () => {
     sinon.stub(CsvImport, 'open')
 
     await wrapper.find('.drop-area').trigger('click')
-    await wrapper.vm.$nextTick()
+    await nextTick()
     await CsvImport.$emit('cancel')
     expect(wrapper.vm.newDb).to.equal(null)
   })

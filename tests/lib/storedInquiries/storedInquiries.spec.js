@@ -18,21 +18,24 @@ describe('storedInquiries.js', () => {
     expect(inquiries).to.eql([])
   })
 
-  it('getStoredInquiries migrate and returns inquiries of v1', () => {
-    localStorage.setItem('myQueries', JSON.stringify([
-      {
-        id: '123',
-        name: 'foo',
-        query: 'SELECT * FROM foo',
-        chart: { here_are: 'foo chart settings' }
-      },
-      {
-        id: '456',
-        name: 'bar',
-        query: 'SELECT * FROM bar',
-        chart: { here_are: 'bar chart settings' }
-      }
-    ]))
+  it('getStoredInquiries migrates and returns inquiries of v1', () => {
+    localStorage.setItem(
+      'myQueries',
+      JSON.stringify([
+        {
+          id: '123',
+          name: 'foo',
+          query: 'SELECT * FROM foo',
+          chart: { here_are: 'foo chart settings' }
+        },
+        {
+          id: '456',
+          name: 'bar',
+          query: 'SELECT * FROM bar',
+          chart: { here_are: 'bar chart settings' }
+        }
+      ])
+    )
     const inquiries = storedInquiries.getStoredInquiries()
     expect(inquiries).to.eql([
       {
@@ -52,11 +55,155 @@ describe('storedInquiries.js', () => {
     ])
   })
 
+  it('getStoredInquiries migrates and returns inquiries of v2', () => {
+    localStorage.setItem(
+      'myInquiries',
+      JSON.stringify({
+        version: 2,
+        inquiries: [
+          {
+            id: 'Xh1Hc9v7P3mRPZVM59QiC',
+            query: 'SELECT * from doc',
+            viewType: 'graph',
+            viewOptions: {
+              structure: {
+                nodeId: 'node_id',
+                objectType: 'object_type',
+                edgeSource: 'source',
+                edgeTarget: 'target'
+              },
+              style: {
+                backgroundColor: 'white',
+                nodes: {
+                  size: { type: 'constant', value: 10 },
+                  color: {
+                    type: 'calculated',
+                    method: 'degree',
+                    colorscale: null,
+                    mode: 'continious',
+                    colorscaleDirection: 'reversed'
+                  },
+                  label: { source: 'label', color: '#444444' }
+                },
+                edges: {
+                  showDirection: true,
+                  size: { type: 'constant', value: 2 },
+                  color: { type: 'constant', value: '#a2b1c6' },
+                  label: { source: null, color: '#a2b1c6' }
+                }
+              },
+              layout: {
+                type: 'forceAtlas2',
+                options: {
+                  initialIterationsAmount: 50,
+                  adjustSizes: false,
+                  barnesHutOptimize: false,
+                  barnesHutTheta: 0.5,
+                  edgeWeightInfluence: 0,
+                  gravity: 1,
+                  linLogMode: false,
+                  outboundAttractionDistribution: false,
+                  scalingRatio: 1,
+                  slowDown: 1,
+                  strongGravityMode: false
+                }
+              }
+            },
+            name: 'student graph FA2',
+            updatedAt: '2026-01-19T21:49:40.708Z',
+            createdAt: '2026-01-19T21:46:13.899Z'
+          },
+          {
+            id: 'Yh1Hc9v7P3mRPZVM59QiD',
+            query: 'SELECT * from test',
+            viewType: 'chart',
+            viewOptions: {
+              data: [{ selectedpoints: [] }, {}],
+              layout: { selections: [{}, {}] },
+              frames: 'some chart frames'
+            },
+            name: 'student chart',
+            updatedAt: '2026-01-19T21:49:40.708Z',
+            createdAt: '2026-01-19T21:46:13.899Z'
+          }
+        ]
+      })
+    )
+    const inquiries = storedInquiries.getStoredInquiries()
+    expect(inquiries).to.eql([
+      {
+        id: 'Xh1Hc9v7P3mRPZVM59QiC',
+        query: 'SELECT * from doc',
+        viewType: 'graph',
+        viewOptions: {
+          structure: {
+            nodeId: 'node_id',
+            objectType: 'object_type',
+            edgeSource: 'source',
+            edgeTarget: 'target'
+          },
+          style: {
+            backgroundColor: 'white',
+            highlightMode: 'node_and_neighbors',
+            nodes: {
+              size: { type: 'constant', value: 10 },
+              color: {
+                type: 'calculated',
+                method: 'degree',
+                colorscale: null,
+                mode: 'continious',
+                colorscaleDirection: 'reversed',
+                opacity: 100
+              },
+              label: { source: 'label', color: '#444444' }
+            },
+            edges: {
+              showDirection: true,
+              size: { type: 'constant', value: 2 },
+              color: { type: 'constant', value: '#a2b1c6' },
+              label: { source: null, color: '#a2b1c6' }
+            }
+          },
+          layout: {
+            type: 'forceAtlas2',
+            options: {
+              initialAlgorithm: 'circular',
+              initialIterationsAmount: 50,
+              adjustSizes: false,
+              barnesHutOptimize: false,
+              barnesHutTheta: 0.5,
+              edgeWeightInfluence: 0,
+              gravity: 1,
+              linLogMode: false,
+              outboundAttractionDistribution: false,
+              scalingRatio: 1,
+              slowDown: 1,
+              strongGravityMode: false
+            }
+          }
+        },
+        name: 'student graph FA2',
+        updatedAt: '2026-01-19T21:49:40.708Z',
+        createdAt: '2026-01-19T21:46:13.899Z'
+      },
+      {
+        id: 'Yh1Hc9v7P3mRPZVM59QiD',
+        query: 'SELECT * from test',
+        viewType: 'chart',
+        viewOptions: {
+          data: [{}, {}],
+          layout: { selections: [] },
+          frames: 'some chart frames'
+        },
+        name: 'student chart',
+        updatedAt: '2026-01-19T21:49:40.708Z',
+        createdAt: '2026-01-19T21:46:13.899Z'
+      }
+    ])
+  })
+
   it('updateStorage and getStoredInquiries', () => {
-    const data = [
-      { id: 1 },
-      { id: 2 }
-    ]
+    const data = [{ id: 1 }, { id: 2 }]
     storedInquiries.updateStorage(data)
     const inquiries = storedInquiries.getStoredInquiries()
     expect(inquiries).to.eql(data)
@@ -71,17 +218,20 @@ describe('storedInquiries.js', () => {
       query: 'SELECT * from foo',
       viewType: 'chart',
       viewOptions: [],
-      createdAt: new Date(2021, 0, 1),
+      createdAt: new Date(2021, 0, 1).toJSON(),
       isPredefined: true
     }
 
     const copy = storedInquiries.duplicateInquiry(base)
     expect(copy).to.have.property('id').which.not.equal(base.id)
-    expect(copy).to.have.property('name').which.equal(base.name + ' Copy')
+    expect(copy)
+      .to.have.property('name')
+      .which.equal(base.name + ' Copy')
     expect(copy).to.have.property('query').which.equal(base.query)
     expect(copy).to.have.property('viewType').which.equal(base.viewType)
     expect(copy).to.have.property('viewOptions').which.eql(base.viewOptions)
-    expect(copy).to.have.property('createdAt').which.within(now, nowPlusMinute)
+    expect(copy).to.have.property('createdAt')
+    expect(new Date(copy.createdAt)).within(now, nowPlusMinute)
     expect(copy).to.not.have.property('isPredefined')
   })
 
@@ -133,7 +283,7 @@ describe('storedInquiries.js', () => {
     const str = storedInquiries.serialiseInquiries(inquiryList)
     const parsedJson = JSON.parse(str)
 
-    expect(parsedJson.version).to.equal(2)
+    expect(parsedJson.version).to.equal(5)
     expect(parsedJson.inquiries).to.have.lengthOf(2)
     expect(parsedJson.inquiries[1]).to.eql(inquiryList[1])
     expect(parsedJson.inquiries[0]).to.eql({
@@ -146,7 +296,7 @@ describe('storedInquiries.js', () => {
     })
   })
 
-  it('deserialiseInquiries migrates inquiries', () => {
+  it('deserialiseInquiries migrates inquiries of v1', () => {
     const str = `[
       {
         "id": 1,
@@ -185,7 +335,149 @@ describe('storedInquiries.js', () => {
     ])
   })
 
-  it('deserialiseInquiries return array for one inquiry of v1', () => {
+  it('deserialiseInquiries migrates inquiries of v2', () => {
+    const str = `{
+      "version": 2,
+      "inquiries": [
+        {
+          "id": 1,
+          "name": "foo",
+          "query": "select * from foo",
+          "viewType": "chart",
+          "viewOptions": {
+              "data": [{"selectedpoints": []}, {}],
+              "layout": {"selections": [{}, {}]},
+              "frames": "some chart frames"
+            },
+          "createdAt": "2020-11-03T14:17:49.524Z" 
+        },
+        {
+          "id": "Xh1Hc9v7P3mRPZVM59QiC",
+          "query": "SELECT * from doc",
+          "viewType": "graph",
+          "viewOptions": {
+            "structure": {
+              "nodeId": "node_id",
+              "objectType": "object_type",
+              "edgeSource": "source",
+              "edgeTarget": "target"
+            },
+            "style": {
+              "backgroundColor": "white",
+              "nodes": {
+                "size": { "type": "constant", "value": 10 },
+                "color": {
+                  "type": "calculated",
+                  "method": "degree",
+                  "colorscale": null,
+                  "mode": "continious",
+                  "colorscaleDirection": "reversed"
+                },
+                "label": { "source": "label", "color": "#444444" }
+              },
+              "edges": {
+                "showDirection": true,
+                "size": { "type": "constant", "value": 2 },
+                "color": { "type": "constant", "value": "#a2b1c6" },
+                "label": { "source": null, "color": "#a2b1c6" }
+              }
+            },
+            "layout": {
+                "type": "forceAtlas2",
+                "options": {
+                  "initialIterationsAmount": 50,
+                  "adjustSizes": false,
+                  "barnesHutOptimize": false,
+                  "barnesHutTheta": 0.5,
+                  "edgeWeightInfluence": 0,
+                  "gravity": 1,
+                  "linLogMode": false,
+                  "outboundAttractionDistribution": false,
+                  "scalingRatio": 1,
+                  "slowDown": 1,
+                  "strongGravityMode": false
+                }
+              }
+          },
+          "name": "student graph",
+          "createdAt": "2026-01-19T21:46:13.899Z"
+        }
+      ]
+    }
+    `
+
+    const inquiry = storedInquiries.deserialiseInquiries(str)
+    expect(inquiry).to.eql([
+      {
+        id: 1,
+        name: 'foo',
+        query: 'select * from foo',
+        viewType: 'chart',
+        viewOptions: {
+          data: [{}, {}],
+          layout: { selections: [] },
+          frames: 'some chart frames'
+        },
+        createdAt: '2020-11-03T14:17:49.524Z'
+      },
+      {
+        id: 'Xh1Hc9v7P3mRPZVM59QiC',
+        query: 'SELECT * from doc',
+        viewType: 'graph',
+        viewOptions: {
+          structure: {
+            nodeId: 'node_id',
+            objectType: 'object_type',
+            edgeSource: 'source',
+            edgeTarget: 'target'
+          },
+          style: {
+            backgroundColor: 'white',
+            highlightMode: 'node_and_neighbors',
+            nodes: {
+              size: { type: 'constant', value: 10 },
+              color: {
+                type: 'calculated',
+                method: 'degree',
+                colorscale: null,
+                mode: 'continious',
+                colorscaleDirection: 'reversed',
+                opacity: 100
+              },
+              label: { source: 'label', color: '#444444' }
+            },
+            edges: {
+              showDirection: true,
+              size: { type: 'constant', value: 2 },
+              color: { type: 'constant', value: '#a2b1c6' },
+              label: { source: null, color: '#a2b1c6' }
+            }
+          },
+          layout: {
+            type: 'forceAtlas2',
+            options: {
+              initialAlgorithm: 'circular',
+              initialIterationsAmount: 50,
+              adjustSizes: false,
+              barnesHutOptimize: false,
+              barnesHutTheta: 0.5,
+              edgeWeightInfluence: 0,
+              gravity: 1,
+              linLogMode: false,
+              outboundAttractionDistribution: false,
+              scalingRatio: 1,
+              slowDown: 1,
+              strongGravityMode: false
+            }
+          }
+        },
+        name: 'student graph',
+        createdAt: '2026-01-19T21:46:13.899Z'
+      }
+    ])
+  })
+
+  it('deserialiseInquiries returns array for one inquiry of v1', () => {
     const str = `
       {
         "id": 1,
@@ -197,20 +489,22 @@ describe('storedInquiries.js', () => {
     `
 
     const inquiry = storedInquiries.deserialiseInquiries(str)
-    expect(inquiry).to.eql([{
-      id: 1,
-      name: 'foo',
-      query: 'select * from foo',
-      viewType: 'chart',
-      viewOptions: [],
-      createdAt: '2020-11-03T14:17:49.524Z'
-    }])
+    expect(inquiry).to.eql([
+      {
+        id: 1,
+        name: 'foo',
+        query: 'select * from foo',
+        viewType: 'chart',
+        viewOptions: [],
+        createdAt: '2020-11-03T14:17:49.524Z'
+      }
+    ])
   })
 
   it('deserialiseInquiries generates new id to avoid duplication', () => {
     storedInquiries.updateStorage([{ id: 1 }])
     const str = `{
-      "version": 2,
+      "version": 3,
       "inquiries": [
         {
           "id": 1,
@@ -256,19 +550,21 @@ describe('storedInquiries.js', () => {
     sinon.stub(fu, 'importFile').returns(Promise.resolve(str))
     const inquiries = await storedInquiries.importInquiries()
 
-    expect(inquiries).to.eql([{
-      id: 1,
-      name: 'foo',
-      query: 'select * from foo',
-      viewType: 'chart',
-      viewOptions: [],
-      createdAt: '2020-11-03T14:17:49.524Z'
-    }])
+    expect(inquiries).to.eql([
+      {
+        id: 1,
+        name: 'foo',
+        query: 'select * from foo',
+        viewType: 'chart',
+        viewOptions: [],
+        createdAt: '2020-11-03T14:17:49.524Z'
+      }
+    ])
   })
 
   it('importInquiries', async () => {
     const str = `{
-      "version": 2,
+      "version": 4,
       "inquiries": [{
         "id": 1,
         "name": "foo",
@@ -281,17 +577,19 @@ describe('storedInquiries.js', () => {
     sinon.stub(fu, 'importFile').returns(Promise.resolve(str))
     const inquiries = await storedInquiries.importInquiries()
 
-    expect(inquiries).to.eql([{
-      id: 1,
-      name: 'foo',
-      query: 'select * from foo',
-      viewType: 'chart',
-      viewOptions: [],
-      createdAt: '2020-11-03T14:17:49.524Z'
-    }])
+    expect(inquiries).to.eql([
+      {
+        id: 1,
+        name: 'foo',
+        query: 'select * from foo',
+        viewType: 'chart',
+        viewOptions: [],
+        createdAt: '2020-11-03T14:17:49.524Z'
+      }
+    ])
   })
 
-  it('readPredefinedInquiries old', async () => {
+  it('readPredefinedInquiries v1', async () => {
     const str = `[
       {
         "id": 1,
@@ -312,21 +610,174 @@ describe('storedInquiries.js', () => {
         viewType: 'chart',
         viewOptions: [],
         createdAt: '2020-11-03T14:17:49.524Z'
-      }])
+      }
+    ])
+  })
+
+  it('readPredefinedInquiries v2', async () => {
+    const str = `{
+      "version": 2,
+      "inquiries": [
+        {
+          "id": 1,
+          "name": "foo",
+          "query": "select * from foo",
+          "viewType": "chart",
+          "viewOptions": {
+              "data": [{"selectedpoints": []}, {}],
+              "layout": {"selections": [{}, {}]},
+              "frames": "some chart frames"
+            },
+          "createdAt": "2020-11-03T14:17:49.524Z" 
+        },
+        {
+          "id": "Xh1Hc9v7P3mRPZVM59QiC",
+          "query": "SELECT * from doc",
+          "viewType": "graph",
+          "viewOptions": {
+            "structure": {
+              "nodeId": "node_id",
+              "objectType": "object_type",
+              "edgeSource": "source",
+              "edgeTarget": "target"
+            },
+            "style": {
+              "backgroundColor": "white",
+              "nodes": {
+                "size": { "type": "constant", "value": 10 },
+                "color": {
+                  "type": "calculated",
+                  "method": "degree",
+                  "colorscale": null,
+                  "mode": "continious",
+                  "colorscaleDirection": "reversed"
+                },
+                "label": { "source": "label", "color": "#444444" }
+              },
+              "edges": {
+                "showDirection": true,
+                "size": { "type": "constant", "value": 2 },
+                "color": { "type": "constant", "value": "#a2b1c6" },
+                "label": { "source": null, "color": "#a2b1c6" }
+              }
+            },
+            "layout": {
+                "type": "forceAtlas2",
+                "options": {
+                  "initialIterationsAmount": 50,
+                  "adjustSizes": false,
+                  "barnesHutOptimize": false,
+                  "barnesHutTheta": 0.5,
+                  "edgeWeightInfluence": 0,
+                  "gravity": 1,
+                  "linLogMode": false,
+                  "outboundAttractionDistribution": false,
+                  "scalingRatio": 1,
+                  "slowDown": 1,
+                  "strongGravityMode": false
+                }
+              }
+          },
+          "name": "student graph",
+          "createdAt": "2026-01-19T21:46:13.899Z"
+        }
+      ]
+    }
+    `
+    sinon.stub(fu, 'readFile').returns(Promise.resolve(new Response(str)))
+    const inquiries = await storedInquiries.readPredefinedInquiries()
+    expect(fu.readFile.calledOnceWith('./inquiries.json')).to.equal(true)
+    expect(inquiries).to.eql([
+      {
+        id: 1,
+        name: 'foo',
+        query: 'select * from foo',
+        viewType: 'chart',
+        viewOptions: {
+          data: [{}, {}],
+          layout: { selections: [] },
+          frames: 'some chart frames'
+        },
+        createdAt: '2020-11-03T14:17:49.524Z'
+      },
+      {
+        id: 'Xh1Hc9v7P3mRPZVM59QiC',
+        query: 'SELECT * from doc',
+        viewType: 'graph',
+        viewOptions: {
+          structure: {
+            nodeId: 'node_id',
+            objectType: 'object_type',
+            edgeSource: 'source',
+            edgeTarget: 'target'
+          },
+          style: {
+            backgroundColor: 'white',
+            highlightMode: 'node_and_neighbors',
+            nodes: {
+              size: { type: 'constant', value: 10 },
+              color: {
+                type: 'calculated',
+                method: 'degree',
+                colorscale: null,
+                mode: 'continious',
+                colorscaleDirection: 'reversed',
+                opacity: 100
+              },
+              label: { source: 'label', color: '#444444' }
+            },
+            edges: {
+              showDirection: true,
+              size: { type: 'constant', value: 2 },
+              color: { type: 'constant', value: '#a2b1c6' },
+              label: { source: null, color: '#a2b1c6' }
+            }
+          },
+          layout: {
+            type: 'forceAtlas2',
+            options: {
+              initialAlgorithm: 'circular',
+              initialIterationsAmount: 50,
+              adjustSizes: false,
+              barnesHutOptimize: false,
+              barnesHutTheta: 0.5,
+              edgeWeightInfluence: 0,
+              gravity: 1,
+              linLogMode: false,
+              outboundAttractionDistribution: false,
+              scalingRatio: 1,
+              slowDown: 1,
+              strongGravityMode: false
+            }
+          }
+        },
+        name: 'student graph',
+        createdAt: '2026-01-19T21:46:13.899Z'
+      }
+    ])
   })
 
   it('readPredefinedInquiries', async () => {
     const str = `{
-      "version": 2,
+      "version": 5,
       "inquiries": [
-      {
-        "id": 1,
-        "name": "foo",
-        "query": "select * from foo",
-        "viewType": "chart",
-        "viewOptions": [],
-        "createdAt": "2020-11-03T14:17:49.524Z" 
-      }]
+        {
+          "id": 1,
+          "name": "foo",
+          "query": "select * from foo",
+          "viewType": "chart",
+          "viewOptions": [],
+          "createdAt": "2020-11-03T14:17:49.524Z" 
+        },
+        {
+          "id": 2,
+          "name": "boo",
+          "query": "select * from boo",
+          "viewType": "graph",
+          "viewOptions": {},
+          "createdAt": "2020-11-03T14:17:49.524Z" 
+        }
+      ]
     }
     `
     sinon.stub(fu, 'readFile').returns(Promise.resolve(new Response(str)))
@@ -340,89 +791,15 @@ describe('storedInquiries.js', () => {
         viewType: 'chart',
         viewOptions: [],
         createdAt: '2020-11-03T14:17:49.524Z'
-      }])
-  })
-
-  it('save adds new inquiry in the storage', () => {
-    const now = new Date()
-    const nowPlusMinute = new Date(now.getTime() + 60 * 1000)
-    const tab = {
-      id: 1,
-      query: 'select * from foo',
-      viewType: 'chart',
-      viewOptions: [],
-      name: null,
-      dataView: {
-        getOptionsForSave () {
-          return ['chart']
-        }
-      }
-
-    }
-    const value = storedInquiries.save(tab, 'foo')
-    expect(value.id).to.equal(tab.id)
-    expect(value.name).to.equal('foo')
-    expect(value.query).to.equal(tab.query)
-    expect(value.viewOptions).to.eql(['chart'])
-    expect(value).to.have.property('createdAt').which.within(now, nowPlusMinute)
-    const inquiries = storedInquiries.getStoredInquiries()
-    expect(JSON.stringify(inquiries)).to.equal(JSON.stringify([value]))
-  })
-
-  it('save updates existing inquiry in the storage', () => {
-    const tab = {
-      id: 1,
-      query: 'select * from foo',
-      viewType: 'chart',
-      viewOptions: [],
-      name: null,
-      dataView: {
-        getOptionsForSave () {
-          return ['chart']
-        }
-      }
-
-    }
-
-    const first = storedInquiries.save(tab, 'foo')
-
-    tab.name = 'foo'
-    tab.query = 'select * from foo'
-    storedInquiries.save(tab)
-    const inquiries = storedInquiries.getStoredInquiries()
-    const second = inquiries[0]
-    expect(inquiries).has.lengthOf(1)
-    expect(second.id).to.equal(first.id)
-    expect(second.name).to.equal(first.name)
-    expect(second.query).to.equal(tab.query)
-    expect(second.viewOptions).to.eql(['chart'])
-    expect(new Date(second.createdAt).getTime()).to.equal(first.createdAt.getTime())
-  })
-
-  it("save adds a new inquiry with new id if it's based on predefined inquiry", () => {
-    const now = new Date()
-    const nowPlusMinute = new Date(now.getTime() + 60 * 1000)
-    const tab = {
-      id: 1,
-      query: 'select * from foo',
-      viewType: 'chart',
-      viewOptions: [],
-      name: 'foo predefined',
-      dataView: {
-        getOptionsForSave () {
-          return ['chart']
-        }
       },
-      isPredefined: true
-    }
-    storedInquiries.save(tab, 'foo')
-
-    const inquiries = storedInquiries.getStoredInquiries()
-    expect(inquiries).has.lengthOf(1)
-    expect(inquiries[0]).to.have.property('id').which.not.equal(tab.id)
-    expect(inquiries[0].name).to.equal('foo')
-    expect(inquiries[0].query).to.equal(tab.query)
-    expect(inquiries[0].viewOptions).to.eql(['chart'])
-    expect(new Date(inquiries[0].createdAt)).to.be.within(now, nowPlusMinute)
+      {
+        id: 2,
+        name: 'boo',
+        query: 'select * from boo',
+        viewType: 'graph',
+        viewOptions: {},
+        createdAt: '2020-11-03T14:17:49.524Z'
+      }
+    ])
   })
 })

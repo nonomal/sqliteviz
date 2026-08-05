@@ -29,11 +29,11 @@
       </g>
       <defs>
         <clipPath id="clip0">
-          <rect width="18" height="18" fill="white"/>
+          <rect width="18" height="18" fill="white" />
         </clipPath>
       </defs>
     </svg>
-    <span class="icon-tooltip" :style="tooltipStyle" ref="tooltip">
+    <span ref="tooltip" class="icon-tooltip" :style="tooltipStyle">
       Add new table from CSV, JSON or NDJSON
     </span>
   </span>
@@ -45,9 +45,10 @@ import tooltipMixin from '@/tooltipMixin'
 export default {
   name: 'AddTableIcon',
   mixins: [tooltipMixin],
-  props: ['tooltip'],
+  props: { tooltip: String },
+  emits: ['click'],
   methods: {
-    onClick () {
+    onClick() {
       this.hideTooltip()
       this.$emit('click')
     }
